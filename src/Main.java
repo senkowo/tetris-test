@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 /*
  *  Make a copy array at the beginning, compare at the end and run special, instead of clear all.
+ *  Once you clear 10, change colors, and maybe increase speed?
  */
 
 class Auto implements Runnable {
@@ -163,6 +164,10 @@ public class Main implements Runnable {
                 }
                 fullArrayPrint();
                 break;
+            case 'b':
+                linesCleared += 5;
+                fullArrayPrint();
+                break;
             default:
                 fullArrayPrint();
         }
@@ -297,7 +302,10 @@ public class Main implements Runnable {
                 Main.constArray[z][i] = "###";
             }
         }
-        Main.constArray[14][19] = " - Points: " + Main.linesCleared + " - #"; // extends too far.
+        Main.constArray[14][19] = " - Points: " + Main.linesCleared + " - "; // extends too far.
+        if (linesCleared < 10) {
+            Main.constArray[14][19] += "#";
+        }
         Main.constArray[14][17] = "#### Next: #####";
         for (int i = 16; i <= 20; i += 2)
             Main.constArray[14][i] = "################";
@@ -327,6 +335,7 @@ public class Main implements Runnable {
     }
 
     public static void fullArrayPrint() { // prints the full stage (mArray).
+        colorToggle(true);
         int h;
         if (debugging) { // prints the hidden space up top as well if true.
             h = height+heightEx-1;
@@ -341,6 +350,7 @@ public class Main implements Runnable {
             }
             System.out.print("\n");
         }
+        //colorToggle(false);
     }
 
     public static String[][] fetchBlock(int ran) {
@@ -572,6 +582,63 @@ public class Main implements Runnable {
             for (int x = 1; x <= 10; x++) {
                 constArray[x][y-1] = constArray[x][y];
             }
+        }
+    }
+
+    public static void colorToggle(boolean on) {
+        if (on) {
+            //linesCleared += 1;//
+
+            /*int letters = (linesCleared/10)%8;
+            String colorA = Integer.toString(letters);
+            System.out.print("\u001b[3"+colorA+";1m");
+
+            int background = ((linesCleared/10)-7)%7;
+            System.out.print(background);
+            String colorB = Integer.toString(background);
+            System.out.print("\u001b[4"+colorB+"m");
+            */
+
+
+            String colorA = "";
+            String colorB = "";
+
+            switch ((linesCleared/5)%7) {
+                case 0:
+                    colorB = "0";
+                    colorA = "7";
+                    break;
+                case 1:// lucky
+                    colorB = "4";
+                    colorA = "3";
+                    break;
+                case 2:// magenta
+                    colorB = "5";
+                    colorA = "7";
+                    break;
+                case 3://very cool red
+                    colorB = "0";
+                    colorA = "1";
+                    break;
+                case 4:
+                    colorB = "0";
+                    colorA = "4";
+                    break;
+                case 5:
+                    colorB = "0";
+                    colorA = "2";
+                    break;
+                case 6:
+                    colorB = "0";
+                    colorA = "5";
+            }
+
+            System.out.print("\u001b[3"+colorA+";1m");
+            System.out.print("\u001b[4"+colorB+";1m");
+
+
+        } else {
+            System.out.print("\u001b[0m");
         }
     }
 
