@@ -18,13 +18,11 @@ import java.util.Arrays;
  *  The l and ; keys are next to the Enter key, so you can use the left hand for inputting
  *      movement and the right for rotation and pressing enter after every input.
  *
- *  I've also yet to make a Game Over screen when the blocks reach the top.
  *
  */
 
 /*
- *  Make a copy array at the beginning, compare at the end and run special, instead of clear all.
- *  Once you clear 10, change colors, and maybe increase speed?
+ *
  */
 
 class Auto implements Runnable {
@@ -563,7 +561,7 @@ public class Main implements Runnable {
         boolean checkPassed = false;
         System.arraycopy(RotationTests.main(mObject, cObject, clockwise), 0, cObject, 0, 5);
         if (!Arrays.deepEquals(cObject, mObject)) {
-            System.out.println("output blocks are different");
+            if (debugging) {System.out.println("output blocks are different");}
             updateRotationState(clockwise);
             checkPassed = true;
         }
