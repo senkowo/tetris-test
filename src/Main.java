@@ -35,10 +35,26 @@ class Auto implements Runnable {
     @Override
     public void run() {
         while(alive) {
-            // move block down by 1 every 5 seconds, sychronize threads with other.
+            // move block down by 1 every 1 seconds, synchronize threads with others.
             try{Thread.sleep(1000);}catch(InterruptedException e){System.out.println(e);}
             synchronized (this) {
                 Main.inputAnalysis("s"); // Monitor -- block off.
+            }
+        }
+    }
+}
+
+class Observer implements Runnable {
+    private volatile boolean alive = true;
+    public void terminate() {
+        this.alive = false;
+    }
+    @Override
+    public void run() {
+        while(alive) {
+            if (Main.countsFailed > 5) {
+                Main.terminator = true;
+                break;
             }
         }
     }
@@ -73,7 +89,7 @@ public class Main implements Runnable {
         boolean overlap = false;
         switch(ch) {
             case 'w':
-                copyArrays(1);
+                copyArrays(1);  // cObject[][] = mObject[][];
                 while (!overlap) {
                     copyArrays(3);  // cObjCoord[] = mObjCoord[];
                     cObjCoord[1] += -1;
@@ -117,6 +133,7 @@ public class Main implements Runnable {
                     blockImplementation();
                     lineClearer();
                     fullArrayPrint();
+                    countsFailed = 0;
                 }
                 break;
             case 'd':
@@ -182,6 +199,9 @@ public class Main implements Runnable {
 
     public static boolean debugging = false;
 
+    public static boolean terminator = false;
+    public static int countsFailed = 0;
+
     public static int linesCleared = 0;
 
     public static String borderCharV = " | ";
@@ -240,6 +260,23 @@ public class Main implements Runnable {
 
     public static void main(String[] args) {
 
+
+        System.out.println("" +
+                "\n\n\tTetris" +
+                "\n\n\tHow to Play:" +
+                "\n\n\tasd to move the block.\n" +
+                "\tw to move the block to the bottom.\n" +
+                "\tl and ; to rotate clockwise and counterclockwise respectively.\n" +
+                "\tPress Enter after every input.\n" +
+                "\n\tIf multiple inputs are received, multiple actions will be performed at once.\n" +
+                "\tThe l and ; keys are next to the Enter key, so you can use the left hand for inputting\n" +
+                "\tmovement and the right for rotation and pressing enter after every input.\n" +
+                "\n\tEnter any key to begin");
+
+        Scanner sc = new Scanner(System.in);
+        sc.next();
+
+
         initConstArray();
         initBuffArray();
         blockCreation(true); // to supplement the one in newBlockSequence when at startup.
@@ -253,6 +290,23 @@ public class Main implements Runnable {
         Thread sh = new Thread(shifter);
         sh.start();
 
+        Observer obs = new Observer();
+        Thread o = new Thread(obs);
+        o.start();
+
+
+        while (true) {
+            if (terminator) {
+                runner.terminate();
+                shifter.terminate();
+                obs.terminate();
+                break;
+            }
+            sleeper(100);
+        }
+        clearScreen();
+        sleeper(1500);
+        System.out.println("\n\n\n\n\t\t\t\tGame Over\n\n\n\n");
     }
 
     public static void newBlockSequence(boolean initial) { // initial actions at startup.
@@ -266,7 +320,6 @@ public class Main implements Runnable {
         blockSpawnLocation();
         copyArrays(0);  // mArray[][] = constArray[][];
         blockImplementation();
-        testPrintt();
         fullArrayPrint();
     }
 
@@ -554,6 +607,7 @@ public class Main implements Runnable {
                 if (!mObject[x][y].equals(" / ")) {
                     constArray[mObjCoord[0]+(x-1)][(mObjCoord[1]-heightEx)+y] = mObject[x][y];
                 }
+        countsFailed += 1;
         newBlockSequence(false);
     }
 
@@ -587,18 +641,6 @@ public class Main implements Runnable {
 
     public static void colorToggle(boolean on) {
         if (on) {
-            //linesCleared += 1;//
-
-            /*int letters = (linesCleared/10)%8;
-            String colorA = Integer.toString(letters);
-            System.out.print("\u001b[3"+colorA+";1m");
-
-            int background = ((linesCleared/10)-7)%7;
-            System.out.print(background);
-            String colorB = Integer.toString(background);
-            System.out.print("\u001b[4"+colorB+"m");
-            */
-
 
             String colorA = "";
             String colorB = "";
@@ -655,7 +697,7 @@ public class Main implements Runnable {
         return (random.nextInt(max))+1;
     }
     public static void sleeper(int t) { // pauses the terminal for "t" milliseconds.
-        try{Thread.sleep(t);}catch(InterruptedException e){System.out.println(e);}
+        try{Thread.sleep(t);}catch(InterruptedException e){e.printStackTrace();}
     }
     public static void clearScreen() { // clears the terminal
         System.out.print("\033[H\033[2J");
